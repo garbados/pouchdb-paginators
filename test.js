@@ -20,6 +20,8 @@ const POUCH_PATH = process.env.COUCH_URL
   ? `${process.env.COUCH_URL}/pouchdb-paginators-test`
   : '.test'
 
+console.log(POUCH_PATH)
+
 describe(name, function () {
   this.timeout(5000) // ci takes a while, huh?
 
