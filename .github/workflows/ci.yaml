@@ -12,8 +12,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
         node: [12,14,16]
+        couchdb: ["2.3", "3.1"]
+    steps:
+      - uses: iamssen/couchdb-github-action@master
+        with:
+          couchdb-version: ${{ matrix.couchdb }}
     steps:
       - uses: actions/checkout@v2
 
@@ -28,6 +32,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      - run: npm i -g add-cors-to-couchdb
+      - run: add-cors-to-couchdb -u admin -p password
       - run: npm ci
 
       # install chromium manually
@@ -35,6 +41,8 @@ jobs:
 
       - name: release testing
         run: npm run release
+        env:
+          COUCH_URL: http://admin:password@localhost:5984
 
       - name: produce coverage report
         run: npm run coveralls
