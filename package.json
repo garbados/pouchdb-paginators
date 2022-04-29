@@ -3,7 +3,10 @@
   "version": "1.0.0-alpha",
   "description": "Paginator plugin for PouchDB queries.",
   "main": "index.js",
-  "files": ["bundle.js", "bundle.min.js"],
+  "files": [
+    "bundle.js",
+    "bundle.min.js"
+  ],
   "scripts": {
     "release": "npm run test && npm run build && npm run build:min",
     "publish": "git clean -dxf && npm run release && npm publish",
@@ -12,10 +15,10 @@
     "test": "npm run test:lint && npm run test:node && npm run test:browser",
     "test:lint": "standard && dependency-check --unused --no-dev .",
     "test:node": "mocha",
-    "test:browser": "mochify test.js",
+    "test:browser": "mochify --transform [ babelify --presets [ module:@babel/preset-env ] ] --transform envify test.js",
     "cov": "npm run cov:node && npm run cov:browser && nyc report",
     "cov:node": "nyc -s npm run test:node",
-    "cov:browser": "nyc -s --no-clean --instrument false mochify --transform [ babelify --ignore [ test ] --plugins [ babel-plugin-istanbul ] ] test.js",
+    "cov:browser": "nyc -s --no-clean --instrument false mochify --transform [ babelify --presets [ module:@babel/preset-env ] --plugins [ babel-plugin-istanbul ] ] --transform envify test.js",
     "coveralls": "npm run cov && nyc report --reporter=text-lcov > lcov.info"
   },
   "repository": {
@@ -29,16 +32,19 @@
   "author": "Diana Thayer <garbados@gmail.com>",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@babel/preset-env": "^7.17.10",
     "babel-plugin-istanbul": "^6.1.1",
     "babelify": "^10.0.0",
     "browserify": "^17.0.0",
     "coveralls": "^3.1.1",
     "dependency-check": "^4.1.0",
+    "envify": "^4.1.0",
     "mocha": "^9.2.2",
     "mochify": "^9.2.0",
     "nyc": "^15.1.0",
     "pouchdb": "^7.3.0",
     "pouchdb-find": "^7.3.0",
+    "regenerator-runtime": "^0.13.9",
     "standard": "^17.0.0",
     "uglify-js": "^3.15.4"
   }

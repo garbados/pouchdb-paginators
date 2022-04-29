@@ -122,36 +122,47 @@ class MangoPaginator extends BasePaginator {
 
   async getNextPage () {
     const results = await super.getNextPage()
-    this.bookmark = results.bookmark
-    if (!this.bookmark) { this._hasNextPage = false }
+    if (results.docs.length === 0) {
+      this._hasNextPage = false
+    } else {
+      this.bookmark = results.bookmark
+    }
     return results
   }
 }
 
 module.exports = function (PouchDB) {
   const query = PouchDB.prototype.query
-  PouchDB.prototype.query = function (name, opts = {}) {
-    if (opts.paginate === false) {
-      delete opts.paginate
-      return query.apply(this, arguments)
-    }
-    const queryFun = async (subOpts = {}) => {
-      return query.call(this, name, { ...opts, ...subOpts })
-    }
-    return new ViewPaginator(queryFun, opts)
-  }
-
   const find = PouchDB.prototype.find
-  if (find) {
-    PouchDB.prototype.find = function (opts) {
+
+  PouchDB.prototype.paginate = function () {
+    this.query = function paginatedQuery (name, opts = {}) {
       if (opts.paginate === false) {
         delete opts.paginate
-        return find.apply(this, arguments)
+        return query.apply(this, arguments)
       }
-      const findFun = async (bookmark) => {
-        return find.call(this, { ...opts, bookmark })
+      const queryFun = async (subOpts) => {
+        return query.call(this, name, { ...opts, ...subOpts })
       }
-      return new MangoPaginator(findFun)
+      return new ViewPaginator(queryFun, opts)
     }
+
+    if (this.find) {
+      this.find = function paginatedFind (opts) {
+        if (opts.paginate === false) {
+          delete opts.paginate
+          return find.apply(this, arguments)
+        }
+        const findFun = async (subOpts) => {
+          return find.call(this, { ...opts, ...subOpts })
+        }
+        return new MangoPaginator(findFun)
+      }
+    }
+  }
+
+  PouchDB.unpaginate = function () {
+    this.prototype.query = query
+    this.prototype.find = find
   }
 }

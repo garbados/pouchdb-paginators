@@ -1,6 +1,13 @@
 /* global describe, it, beforeEach, afterEach, emit */
 'use strict'
 
+// require regenerator runtime for babelify-envify-mochify pipeline
+try {
+  window && require('regenerator-runtime')
+} catch (err) {
+  // ignore
+}
+
 const assert = require('assert').strict
 const { name } = require('./package.json')
 const PouchDB = require('pouchdb')
@@ -9,11 +16,16 @@ PouchDB.plugin(require('.'))
 
 const NUM_DOCS = 1e2
 
+const POUCH_PATH = process.env.COUCH_URL
+  ? `${process.env.COUCH_URL}/pouchdb-paginators-test`
+  : '.test'
+
 describe(name, function () {
   this.timeout(5000) // ci takes a while, huh?
 
   beforeEach(async function () {
-    this.db = new PouchDB('.test')
+    this.db = new PouchDB(POUCH_PATH)
+    this.db.paginate()
     for (let i = 0; i < NUM_DOCS; i++) {
       if (i % 2 === 0) {
         await this.db.post({ hello: 'world' })
@@ -25,6 +37,16 @@ describe(name, function () {
 
   afterEach(async function () {
     await this.db.destroy()
+    PouchDB.unpaginate()
+  })
+
+  describe('initialization', function () {
+    it('should not modify find if it does not exist', async function () {
+      PouchDB.unpaginate()
+      this.db.find = undefined
+      this.db.paginate()
+      assert.equal(typeof this.db.find, 'undefined')
+    })
   })
 
   describe('query', function () {
