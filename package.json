@@ -6,6 +6,7 @@
   "files": ["bundle.js", "bundle.min.js"],
   "scripts": {
     "release": "npm run test && npm run build && npm run build:min",
+    "publish": "git clean -dxf && npm run release && npm publish",
     "build": "browserify -o bundle.js index.js ",
     "build:min": "uglifyjs -mc -o bundle.min.js bundle.js",
     "test": "npm run test:lint && npm run test:node && npm run test:browser",
