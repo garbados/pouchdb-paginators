@@ -10,6 +10,8 @@ PouchDB.plugin(require('.'))
 const NUM_DOCS = 1e2
 
 describe(name, function () {
+  this.timeout(5000) // ci takes a while, huh?
+
   beforeEach(async function () {
     this.db = new PouchDB('.test')
     for (let i = 0; i < NUM_DOCS; i++) {
