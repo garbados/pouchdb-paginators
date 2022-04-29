@@ -14,6 +14,9 @@ Pagination in PouchDB and CouchDB is rather unintuitive, especially for map/redu
 const PouchDB = require('pouchdb')
 PouchDB.plugin(require('pouchdb-paginators'))
 
+const db = new PouchDB('...')
+db.paginate() // setup paginators
+
 const pager = db.query('queries/example')
 // now you can page through results
 for await (const results of pager.pages()) {
@@ -38,7 +41,29 @@ console.log(results)
 // }
 ```
 
+You can even turn off pagination globally.
+
+```js
+PouchDB.unpaginate()
+const results = await db.query('queries/example')
+console.log(results)
+// {
+//   total_rows: N,
+//   rows: [
+//     ...
+//   ]
+// }
+```
+
 ## Usage
+
+### PouchDB.unpaginate()
+
+Removes the paginating methods from PouchDB instances and restores them to their non-paginating originals.
+
+### db.paginate()
+
+Sets up pagination. Until this is run, query and find methods will not return paginators.
 
 ### db.query(name, opts)
 
