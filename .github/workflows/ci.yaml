@@ -47,6 +47,8 @@ jobs:
 
       - name: produce coverage report
         run: npm run coveralls
+        env:
+          COUCH_URL: http://admin:password@localhost:5984
 
       - name: report coverage to coveralls
         uses: coverallsapp/github-action@master
