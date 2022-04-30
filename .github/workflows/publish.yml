@@ -41,7 +41,7 @@ jobs:
       - run: npm ci
       - run: git config --global user.name 'Diana Thayer'
       - run: git config --global user.email 'garbados@users.noreply.github.com'
-      - run: npm version ${{ github.event.inputs.bump }} -m "version bump: %s"
+      - run: npm version ${{ github.event.inputs.bump }} -m 'version bump %s'
       - run: npm run build
       - run: npm run build:min
       - run: git push
