@@ -40,8 +40,17 @@ jobs:
       - run: npm version ${{ github.event.inputs.bump }} -m 'version bump %s'
       - run: npm run build
       - run: npm run build:min
-      - run: git push
-      - run: git push --tags
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GH_TOKEN }}
+          branch: ${{ github.ref }}
+      - name: Push tags
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GH_TOKEN }}
+          branch: ${{ github.ref }}
+          tags: true
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
