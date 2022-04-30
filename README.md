@@ -6,7 +6,7 @@
 [![NPM Version](https://img.shields.io/npm/v/pouchdb-paginators.svg?style=flat-square)](https://www.npmjs.com/package/pouchdb-paginators)
 [![JS Standard Style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 
-A plugin that causes the `db.query()` and `db.find()` methods to return paginators instead of promises, allowing you to page through large result sets confidently.
+A plugin that causes the `db.allDocs()`, `db.query()`, and `db.find()` methods to return paginators instead of promises, allowing you to page through large result sets confidently.
 
 Pagination in PouchDB and CouchDB is rather unintuitive, especially for map/reduce views. This plugin intends to make it easy and reliable. For example:
 
@@ -57,13 +57,14 @@ console.log(results)
 
 ## Compatibility Note
 
-Pagination using `db.find()` only works with a PouchDB instance representing a connection to a CouchDB installation. Otherwise, because [PouchDB does not currently support bookmarks](https://github.com/pouchdb/pouchdb/issues/8497), your paginators will always return the same page. If you are using PouchDB with any non-CouchDB storage backend, like leveldb or indexeddb, you should initialize the plugin like so to only paginate view queries:
+Pagination using `db.find()` only works with a PouchDB instance representing a connection to a CouchDB installation. Otherwise, because [PouchDB does not currently support bookmarks](https://github.com/pouchdb/pouchdb/issues/8497), your paginators will always return the same page. If you are using PouchDB with any non-CouchDB storage backend, like leveldb or indexeddb, you should initialize the plugin like so to only paginate the primary index (`db.allDocs()`) and view queries:
 
 ```js
+db.paginateAllDocs()
 db.paginateQuery()
 ```
 
-This will only cause calls to `db.query()` to return paginators, while `db.find()` returns results normally.
+This will only cause calls to `db.allDocs()` and `db.query()` to return paginators, while `db.find()` will return results normally.
 
 ## Usage
 
@@ -74,6 +75,10 @@ Removes the paginating methods from PouchDB instances and restores them to their
 ### db.paginate()
 
 Sets up pagination. Until this is run, query and find methods will not return paginators.
+
+### db.paginateAllDocs()
+
+Sets up pagination on `db.allDocs()` calls.
 
 ### db.paginateQuery()
 

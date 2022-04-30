@@ -49,6 +49,49 @@ describe(name, function () {
       this.db.paginate()
       assert.equal(typeof this.db.find, 'undefined')
     })
+
+    it('should unpaginate ok multiple times', function () {
+      PouchDB.unpaginate()
+      PouchDB.unpaginate()
+    })
+  })
+
+  describe('allDocs', function () {
+    it('should paginate ok', async function () {
+      const pager = this.db.allDocs()
+      // test forward pagination
+      const ids = {}
+      let total = 0
+      for await (const page of pager.pages()) {
+        assert.equal(typeof page.rows.length, 'number', 'results did not resemble normal query results')
+        total += page.rows.length
+        for (const row of page.rows) {
+          // ensure we never encounter duplicates during paging
+          assert(!(row.id in ids), 'encountered duplicate id while paging forward')
+          ids[row.id] = true
+        }
+      }
+      assert.equal(pager.hasNextPage, false, 'did not page through all pages')
+      assert.equal(total, NUM_DOCS, 'did not page through all docs')
+      // test reverse pagination
+      total = 0
+      for await (const page of pager.reverse()) {
+        assert.equal(typeof page.rows.length, 'number', 'results did not resemble normal query results')
+        total += page.rows.length
+        for (const row of page.rows) {
+          // ensure we never encounter duplicates while paging backwards
+          assert(row.id in ids, 'encountered duplicate id while paging backward')
+          delete ids[row.id]
+        }
+      }
+      assert.equal(pager.hasPrevPage, false, 'did not page through all pages while paging backwards')
+      assert.equal(total, NUM_DOCS, 'did not page through all docs while paging backwards')
+    })
+
+    it('should not paginate when asked', async function () {
+      const results = await this.db.allDocs({ paginate: false })
+      assert.equal(results.rows.length, NUM_DOCS)
+    })
   })
 
   describe('query', function () {

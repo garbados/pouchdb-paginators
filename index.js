@@ -132,8 +132,23 @@ class MangoPaginator extends BasePaginator {
 }
 
 module.exports = function (PouchDB) {
+  let allDocs
   const query = PouchDB.prototype.query
   const find = PouchDB.prototype.find
+
+  PouchDB.prototype.paginateAllDocs = function () {
+    allDocs = this.allDocs
+    this.allDocs = function paginatedAllDocs (opts = {}) {
+      if (opts.paginate === false) {
+        delete opts.paginate
+        return allDocs.call(this, opts)
+      }
+      const allDocsFun = async (subOpts) => {
+        return allDocs.call(this, { ...opts, ...subOpts })
+      }
+      return new ViewPaginator(allDocsFun, opts)
+    }
+  }
 
   PouchDB.prototype.paginateQuery = function () {
     this.query = function paginatedQuery (name, opts = {}) {
@@ -164,11 +179,16 @@ module.exports = function (PouchDB) {
   }
 
   PouchDB.prototype.paginate = function () {
+    this.paginateAllDocs()
     this.paginateQuery()
     this.paginateFind()
   }
 
   PouchDB.unpaginate = function () {
+    if (allDocs) {
+      this.prototype.allDocs = allDocs
+      allDocs = undefined
+    }
     this.prototype.query = query
     this.prototype.find = find
   }
