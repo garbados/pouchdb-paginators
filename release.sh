@@ -36,5 +36,5 @@ echo Pushing to origin... && \
 git push && \
 git push --tags && \
 echo Publishing to NPM && \
-npm publish --dry-run && \
+npm publish && \
 echo Done!
