@@ -55,6 +55,16 @@ console.log(results)
 // }
 ```
 
+## Compatibility Note
+
+Pagination using `db.find()` only works with a PouchDB instance representing a connection to a CouchDB installation. Otherwise, because [PouchDB does not currently support bookmarks](https://github.com/pouchdb/pouchdb/issues/8497), your paginators will always return the same page. If you are using PouchDB with any non-CouchDB storage backend, like leveldb or indexeddb, you should initialize the plugin like so to only paginate view queries:
+
+```js
+db.paginateQuery()
+```
+
+This will only cause calls to `db.query()` to return paginators, while `db.find()` returns results normally.
+
 ## Usage
 
 ### PouchDB.unpaginate()
@@ -64,6 +74,14 @@ Removes the paginating methods from PouchDB instances and restores them to their
 ### db.paginate()
 
 Sets up pagination. Until this is run, query and find methods will not return paginators.
+
+### db.paginateQuery()
+
+Sets up pagination on `db.query()` calls.
+
+### db.paginateFind()
+
+Sets up pagination on `db.find()` calls if the `pouchdb-find` plugin has already been applied.
 
 ### db.query(name, opts)
 

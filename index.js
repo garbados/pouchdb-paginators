@@ -135,7 +135,7 @@ module.exports = function (PouchDB) {
   const query = PouchDB.prototype.query
   const find = PouchDB.prototype.find
 
-  PouchDB.prototype.paginate = function () {
+  PouchDB.prototype.paginateQuery = function () {
     this.query = function paginatedQuery (name, opts = {}) {
       if (opts.paginate === false) {
         delete opts.paginate
@@ -146,7 +146,9 @@ module.exports = function (PouchDB) {
       }
       return new ViewPaginator(queryFun, opts)
     }
+  }
 
+  PouchDB.prototype.paginateFind = function () {
     if (this.find) {
       this.find = function paginatedFind (opts) {
         if (opts.paginate === false) {
@@ -159,6 +161,11 @@ module.exports = function (PouchDB) {
         return new MangoPaginator(findFun)
       }
     }
+  }
+
+  PouchDB.prototype.paginate = function () {
+    this.paginateQuery()
+    this.paginateFind()
   }
 
   PouchDB.unpaginate = function () {
