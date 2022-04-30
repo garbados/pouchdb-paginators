@@ -26,13 +26,15 @@ describe(name, function () {
   beforeEach(async function () {
     this.db = new PouchDB(POUCH_PATH)
     this.db.paginate()
+    const docs = []
     for (let i = 0; i < NUM_DOCS; i++) {
       if (i % 2 === 0) {
-        await this.db.post({ hello: 'world' })
+        docs.push({ hello: 'world' })
       } else {
-        await this.db.post({ hello: 'galaxy' })
+        docs.push({ hello: 'galaxy' })
       }
     }
+    await this.db.bulkDocs({ docs })
   })
 
   afterEach(async function () {
