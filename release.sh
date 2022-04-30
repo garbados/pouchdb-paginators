@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# THE RELEASE PROCESS
+# to release a new version you must use this process.
+# you must possess the privileges it requires.
+# you are accountable for its proper execution.
+# ARE YOU PREPARED FOR THE CONSEQUENCES?
+
 OPTIONS=("patch" "minor" "major")
 DEFAULT=patch
 ACTUAL=$1
