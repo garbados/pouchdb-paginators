@@ -1,6 +1,6 @@
 {
   "name": "pouchdb-paginators",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Paginator plugin for PouchDB queries.",
   "main": "index.js",
   "files": [
