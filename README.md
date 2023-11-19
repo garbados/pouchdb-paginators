@@ -6,7 +6,7 @@
 [![NPM Version](https://img.shields.io/npm/v/pouchdb-paginators.svg?style=flat-square)](https://www.npmjs.com/package/pouchdb-paginators)
 [![JS Standard Style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 
-A plugin that causes the `db.allDocs()`, `db.query()`, and `db.find()` methods to return paginators instead of promises, allowing you to page through large result sets confidently.
+A plugin that adds to PouchDB methods like `.paginateAllDocs()` which return paginators over results. Paginators can be iterated over without loading all results into memory, and they effectively coordinate per-page query settings with usual options like `reduce: false` or `include_docs: true`.
 
 Pagination in PouchDB and CouchDB is rather unintuitive, especially for map/reduce views. This plugin intends to make it easy and reliable. For example:
 
@@ -15,9 +15,8 @@ const PouchDB = require('pouchdb')
 PouchDB.plugin(require('pouchdb-paginators'))
 
 const db = new PouchDB('...')
-db.paginate() // setup paginators
 
-const pager = db.query('queries/example')
+const pager = db.paginateQuery('queries/example')
 // now you can page through results
 for await (const results of pager.pages()) {
   // do what thou wilt
@@ -28,77 +27,23 @@ for await (const results of pager.reverses()) {
 }
 ```
 
-You can disable pagination if you prefer:
-
-```js
-const results = await db.query('queries/example', { paginate: false })
-console.log(results)
-// {
-//   total_rows: N,
-//   rows: [
-//     ...
-//   ]
-// }
-```
-
-You can even turn off pagination globally.
-
-```js
-PouchDB.unpaginate()
-const results = await db.query('queries/example')
-console.log(results)
-// {
-//   total_rows: N,
-//   rows: [
-//     ...
-//   ]
-// }
-```
-
 ## Compatibility Note
 
-Pagination using `db.find()` only works with a PouchDB instance representing a connection to a CouchDB installation. Otherwise, because [PouchDB does not currently support bookmarks](https://github.com/pouchdb/pouchdb/issues/8497), your paginators will always return the same page. If you are using PouchDB with any non-CouchDB storage backend, like leveldb or indexeddb, you should initialize the plugin like so to only paginate the primary index (`db.allDocs()`) and view queries:
-
-```js
-db.paginateAllDocs()
-db.paginateQuery()
-```
-
-This will only cause calls to `db.allDocs()` and `db.query()` to return paginators, while `db.find()` will return results normally.
+Pagination using `db.find()` only works with a PouchDB instance representing a connection to a CouchDB installation. Otherwise, because [PouchDB does not currently support bookmarks](https://github.com/pouchdb/pouchdb/issues/8497), your paginators will always return the same page. If you are using PouchDB with any non-CouchDB storage backend, like leveldb or indexeddb, `.paginateFind()` will not be able to page forward.
 
 ## Usage
 
-### PouchDB.unpaginate()
+### New Methods
 
-Removes the paginating methods from PouchDB instances and restores them to their non-paginating originals.
+The plugin adds three methods which mirror existing query methods, accepting all the same options, but which return paginators:
 
-### db.paginate()
-
-Sets up pagination. Until this is run, query and find methods will not return paginators.
-
-### db.paginateAllDocs()
-
-Sets up pagination on `db.allDocs()` calls.
-
-### db.paginateQuery()
-
-Sets up pagination on `db.query()` calls.
-
-### db.paginateFind()
-
-Sets up pagination on `db.find()` calls if the `pouchdb-find` plugin has already been applied.
-
-### db.query(name, opts)
-
-Unless `opt.paginate` is equal to `false`, this method will now return a paginator. If it is true, this method will return results normally.
-
-### db.find(opts)
-
-If you have set up Mango queries with [pouchdb-find](https://pouchdb.com/guides/mango-queries.html), then adding this plugin will cause the `db.find()` method to return a paginator. You may disable pagination and return normal results by setting `opts.paginate` to false.
+- `db.paginateAllDocs()` mirrors `db.allDocs()`.
+- `db.paginateQuery()` mirrors `db.query()`.
+- `db.paginateFind()` mirrors `db.find()`.
 
 ### Paginator
 
-Paginators for both `db.query()` and `db.find()` have the same API. The pages that paginators return have a default limit of 20 results.
+All paginators have the same API. The pages that paginators return have a default limit of 20 results.
 
 #### paginator.hasPrevPage
 

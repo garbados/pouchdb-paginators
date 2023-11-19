@@ -131,65 +131,23 @@ class MangoPaginator extends BasePaginator {
   }
 }
 
-module.exports = function (PouchDB) {
-  let allDocs
-  const query = PouchDB.prototype.query
-  const find = PouchDB.prototype.find
-
-  PouchDB.prototype.paginateAllDocs = function () {
-    allDocs = this.allDocs
-    this.allDocs = function paginatedAllDocs (opts = {}) {
-      if (opts.paginate === false) {
-        delete opts.paginate
-        return allDocs.call(this, opts)
-      }
-      const allDocsFun = async (subOpts) => {
-        return allDocs.call(this, { ...opts, ...subOpts })
-      }
-      return new ViewPaginator(allDocsFun, opts)
+module.exports = {
+  paginateAllDocs: function (opts = {}) {
+    const allDocsFun = async (subOpts) => {
+      return this.allDocs({ ...opts, ...subOpts })
     }
-  }
-
-  PouchDB.prototype.paginateQuery = function () {
-    this.query = function paginatedQuery (name, opts = {}) {
-      if (opts.paginate === false) {
-        delete opts.paginate
-        return query.apply(this, arguments)
-      }
-      const queryFun = async (subOpts) => {
-        return query.call(this, name, { ...opts, ...subOpts })
-      }
-      return new ViewPaginator(queryFun, opts)
+    return new ViewPaginator(allDocsFun, opts)
+  },
+  paginateQuery: function (name, opts = {}) {
+    const queryFun = async (subOpts) => {
+      return this.query(name, { ...opts, ...subOpts })
     }
-  }
-
-  PouchDB.prototype.paginateFind = function () {
-    if (this.find) {
-      this.find = function paginatedFind (opts) {
-        if (opts.paginate === false) {
-          delete opts.paginate
-          return find.apply(this, arguments)
-        }
-        const findFun = async (subOpts) => {
-          return find.call(this, { ...opts, ...subOpts })
-        }
-        return new MangoPaginator(findFun)
-      }
+    return new ViewPaginator(queryFun, opts)
+  },
+  paginateFind: function (opts = {}) {
+    const findFun = async (subOpts) => {
+      return this.find({ ...opts, ...subOpts })
     }
-  }
-
-  PouchDB.prototype.paginate = function () {
-    this.paginateAllDocs()
-    this.paginateQuery()
-    this.paginateFind()
-  }
-
-  PouchDB.unpaginate = function () {
-    if (allDocs) {
-      this.prototype.allDocs = allDocs
-      allDocs = undefined
-    }
-    this.prototype.query = query
-    this.prototype.find = find
+    return new MangoPaginator(findFun)
   }
 }
