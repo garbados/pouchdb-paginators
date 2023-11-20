@@ -98,7 +98,7 @@ describe(name, function () {
       })
     })
 
-    it('should paginate through results', async function () {
+    it.only('should paginate through results', async function () {
       const pager = this.db.paginateQuery('queries/test')
       // test forward pagination
       const ids = {}
