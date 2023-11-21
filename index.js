@@ -34,11 +34,12 @@ class BasePaginator {
     if (this.lastopts.length === 0) {
       this._hasPrevPage = false
     }
+    this._hasNextPage = true // probably!
     return page
   }
 
   async getSamePage () {
-    const opts = this.getOpts()
+    const opts = this.lastopts[this.lastopts.length - 1] || this.getOpts()
     const page = await this.fun(opts)
     if (this.lastopts.length === 0) {
       // get first page ok
@@ -49,7 +50,6 @@ class BasePaginator {
 
   async getNextPage () {
     const opts = this.getOpts()
-    console.log(opts)
     const page = await this.fun(opts)
     this.lastopts.push(opts)
     if (this.lastopts.length > 1) {
@@ -97,11 +97,15 @@ class ViewPaginator extends BasePaginator {
       this.startkey = page.rows[page.rows.length - 1].key
       // set up the query for the next page
       this._hasNextPage = (page.rows.length === this.limit)
+      const lastOpts = this.lastopts[this.lastopts.length - 1]
+      let lastSkip = 0
+      if (lastOpts && (lastOpts.startkey === this.startkey)) {
+        lastSkip = lastOpts.skip
+      }
       this.skip = page.rows.map(row => row.key).reduce((sum, key) => {
         // adjust skip to account for all rows with a duplicate key
-        sum += key === this.startkey ? 1 : 0
-        return sum
-      }, -1)
+        return sum + ((key === this.startkey) ? 1 : 0)
+      }, lastSkip)
     }
     return page
   }

@@ -98,7 +98,7 @@ describe(name, function () {
       })
     })
 
-    it.only('should paginate through results', async function () {
+    it('should paginate through results', async function () {
       const pager = this.db.paginateQuery('queries/test')
       // test forward pagination
       const ids = {}
@@ -204,6 +204,18 @@ describe(name, function () {
       }
     })
 
+    it('can get the first page with same-page ok', async function () {
+      const pager = this.db.paginateQuery('queries/test')
+      const page1 = await pager.getSamePage()
+      await pager.getNextPage()
+      const page3 = await pager.getPrevPage()
+      for (let i = 0; i < page1.rows.length; i++) {
+        const row1 = page1.rows[i]
+        const row2 = page3.rows[i]
+        assert.equal(row1.id, row2.id, 'paging forward and back returned unexpected results')
+      }
+    })
+
     it('should not paginate when asked', async function () {
       const results = await this.db.query('queries/test')
       assert.equal(results.rows.length, NUM_DOCS)
@@ -223,7 +235,6 @@ describe(name, function () {
         const ids = {}
         let total = 0
         for await (const page of pager.pages()) {
-          console.log(page)
           assert.equal(typeof page.docs.length, 'number', 'results did not resemble normal query results')
           total += page.docs.length
           for (const doc of page.docs) {
