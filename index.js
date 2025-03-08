@@ -81,10 +81,20 @@ class ViewPaginator extends BasePaginator {
 
   _mergeOpts (opts) {
     opts = super._mergeOpts(opts)
-    if (this.startkey) opts.startkey = this.startkey
-    if (this.finalkey) opts.endkey = this.finalkey
-    if (this.skip) opts.skip = this.skip
+    opts.startkey ||= this.startkey
+    opts.endkey ||= this.finalkey
+    opts.skip ||= this.skip
     return opts
+  }
+
+  async getPrevPage () {
+    const page = await super.getPrevPage()
+    const lastOpts = this.lastopts[this.lastopts.length - 1]
+    if (lastOpts) {
+      this.skip = lastOpts.skip
+    } else {
+      this.skip = 0
+    }
   }
 
   async getNextPage () {
@@ -97,7 +107,7 @@ class ViewPaginator extends BasePaginator {
       this.startkey = page.rows[page.rows.length - 1].key
       // set up the query for the next page
       this._hasNextPage = (page.rows.length === this.limit)
-      const lastOpts = this.lastopts[this.lastopts.length - 1]
+      const lastOpts = this.lastopts[this.lastopts.length - 2]
       let lastSkip = 0
       if (lastOpts && (lastOpts.startkey === this.startkey)) {
         lastSkip = lastOpts.skip
